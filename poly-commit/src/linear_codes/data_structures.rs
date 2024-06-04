@@ -1,4 +1,4 @@
-se super::utils::SprsMat;
+use super::utils::SprsMat;
 use crate::{utils::Matrix, PCCommitment, PCCommitmentState};
 use ark_crypto_primitives::{
     crh::CRHScheme,
