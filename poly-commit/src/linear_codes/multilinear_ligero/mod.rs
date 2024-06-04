@@ -13,6 +13,7 @@ use ark_poly::{MultilinearExtension, Polynomial};
 use ark_std::log2;
 use ark_std::marker::PhantomData;
 use ark_std::vec::Vec;
+use crate::Error;
 
 mod tests;
 
@@ -61,8 +62,8 @@ where
         )
     }
 
-    fn encode(msg: &[F], param: &Self::LinCodePCParams) -> Vec<F> {
-        reed_solomon(msg, param.rho_inv)
+    fn encode(msg: &[F], param: &Self::LinCodePCParams) -> Result<Vec<F>, Error> {
+        Ok(reed_solomon(msg, param.rho_inv))
     }
 
     fn poly_to_vec(polynomial: &P) -> Vec<F> {

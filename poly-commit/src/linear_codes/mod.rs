@@ -89,7 +89,8 @@ where
     type LinCodePCParams: PCUniversalParams
         + PCCommitterKey
         + PCVerifierKey
-        + LinCodeParametersInfo<C, H>;
+        + LinCodeParametersInfo<C, H>
+        + Sync;
 
     /// Does a default setup for the PCS.
     fn setup<R: RngCore>(
@@ -454,7 +455,7 @@ where
             }
 
             // 5. Compute the encoding w = E(v).
-            let w = L::encode(&proof.opening.v, vk);
+            let w = L::encode(&proof.opening.v, vk)?;
 
             // 6. Compute `a`, `b` to right- and left- multiply with the matrix `M`.
             let (a, b) = L::tensor(point, n_cols, n_rows);
@@ -463,7 +464,7 @@ where
             // matches with what the verifier computed for himself.
             // Note: we sacrifice some code repetition in order not to repeat execution.
             if let (Some(well_formedness), Some(r)) = out {
-                let w_well_formedness = L::encode(well_formedness, vk);
+                let w_well_formedness = L::encode(well_formedness, vk)?;
                 for (transcript_index, matrix_index) in indices.iter().enumerate() {
                     if inner_product(&r, &proof.opening.columns[transcript_index])
                         != w_well_formedness[*matrix_index]

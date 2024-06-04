@@ -7,6 +7,7 @@ use ark_ff::PrimeField;
 use ark_poly::DenseUVPolynomial;
 use ark_std::marker::PhantomData;
 use ark_std::vec::Vec;
+use crate::Error;
 
 mod tests;
 
@@ -55,8 +56,8 @@ where
         )
     }
 
-    fn encode(msg: &[F], param: &Self::LinCodePCParams) -> Vec<F> {
-        reed_solomon(msg, param.rho_inv)
+    fn encode(msg: &[F], param: &Self::LinCodePCParams) -> Result<Vec<F>, Error> {
+        Ok(reed_solomon(msg, param.rho_inv))
     }
 
     /// For a univariate polynomial, we simply return the list of coefficients.

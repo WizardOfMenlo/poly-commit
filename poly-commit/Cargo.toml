@@ -39,11 +39,6 @@ name = "brakedown_times"
 path = "benches/brakedown_ml_times.rs"
 
 [[bench]]
-name = "pcs"
-path = "benches/pcs.rs"
-harness = false
-
-[[bench]]
 name = "size"
 path = "benches/size.rs"
 harness = false

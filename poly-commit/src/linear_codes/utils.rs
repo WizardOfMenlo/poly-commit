@@ -1,6 +1,7 @@
 use crate::{utils::ceil_div, Error};
 use ark_crypto_primitives::sponge::CryptographicSponge;
-use ark_ff::{Field, PrimeField};
+use ark_ff::{FftField, Field, PrimeField};
+use ark_poly::{EvaluationDomain, GeneralEvaluationDomain};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 use ark_std::string::ToString;
 use ark_std::vec::Vec;
@@ -265,6 +266,12 @@ pub(crate) mod tests {
 
     use ark_bls12_377::Fq;
     use ark_bls12_377::Fr;
+    use ark_poly::{
+        domain::general::GeneralEvaluationDomain, univariate::DensePolynomial, DenseUVPolynomial,
+        Polynomial,
+    };
+    use ark_std::test_rng;
+    use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
 
     #[test]
     fn test_reed_solomon() {
