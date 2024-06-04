@@ -202,7 +202,6 @@ where
 
     let (coms, states) = PCS::commit(&ck, [&labeled_poly], Some(rng)).unwrap();
     let point = rand_point(num_vars, rng);
-
     let claimed_eval = labeled_poly.evaluate(&point);
     let proof = PCS::open(
         &ck,

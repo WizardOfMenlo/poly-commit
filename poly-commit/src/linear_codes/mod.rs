@@ -25,21 +25,25 @@ mod utils;
 
 mod multilinear_ligero;
 mod univariate_ligero;
+mod multilinear_brakedown;
 
 pub use multilinear_ligero::MultilinearLigero;
 pub use univariate_ligero::UnivariateLigero;
+pub use multilinear_brakedown::MultilinearBrakedown;
 
-mod data_structures;
 mod ligero;
+mod brakedown;
+mod data_structures;
+pub use data_structures::BrakedownPCParams;
 use data_structures::*;
 
-pub use data_structures::{LigeroPCParams, LinCodePCProof};
+pub use data_structures::LinCodePCProof;
 
 use utils::{calculate_t, get_indices_from_sponge};
 
 const FIELD_SIZE_ERROR: &str = "This field is not suitable for the proposed parameters";
 
-/// For linear code PC schemes, the universal paramters, committer key
+/// For linear code PC schemes, the universal parameters, committer key
 /// and verifier key are all the same. This trait abstracts the common
 /// information contained in these.
 pub trait LinCodeParametersInfo<C, H>
@@ -85,8 +89,7 @@ where
     type LinCodePCParams: PCUniversalParams
         + PCCommitterKey
         + PCVerifierKey
-        + LinCodeParametersInfo<C, H>
-        + Sync;
+        + LinCodeParametersInfo<C, H>;
 
     /// Does a default setup for the PCS.
     fn setup<R: RngCore>(
@@ -100,7 +103,7 @@ where
 
     /// Encode a message, which is interpreted as a vector of coefficients
     /// of a polynomial of degree m - 1.
-    fn encode(msg: &[F], param: &Self::LinCodePCParams) -> Vec<F>;
+    fn encode(msg: &[F], param: &Self::LinCodePCParams) -> Result<Vec<F>, Error>;
 
     /// Represent the polynomial as either coefficients,
     /// in the univariate case, or evaluations over
@@ -126,8 +129,11 @@ where
 
         // 2. Apply encoding row-wise
         let rows = mat.rows();
-        let ext_mat =
-            Matrix::new_from_rows(cfg_iter!(rows).map(|r| Self::encode(r, param)).collect());
+        let ext_mat = Matrix::new_from_rows(
+            cfg_iter!(rows)
+                .map(|r| Self::encode(r, param).unwrap())
+                .collect(),
+        );
 
         (mat, ext_mat)
     }
@@ -184,7 +190,7 @@ where
 
     /// This is only a default setup with reasonable parameters.
     /// To create your own public parameters (from which vk/ck can be derived by `trim`),
-    /// see the documentation for `LigeroPCUniversalParams`.
+    /// see the documentation for `BrakedownPCUniversalParams`.
     fn setup<R: RngCore>(
         max_degree: usize,
         num_vars: Option<usize>,
@@ -264,7 +270,7 @@ where
                 leaves,
             };
             let mut leaves: Vec<C::Leaf> =
-                state.leaves.clone().into_iter().map(|h| h.into()).collect(); // TODO cfg_inter
+                state.leaves.clone().into_iter().map(|h| h.into()).collect();
             let col_tree = create_merkle_tree::<C>(
                 &mut leaves,
                 ck.leaf_hash_param(),
@@ -324,7 +330,7 @@ where
                 leaves: col_hashes,
             } = state;
             let mut col_hashes: Vec<C::Leaf> =
-                col_hashes.clone().into_iter().map(|h| h.into()).collect(); // TODO cfg_inter
+                col_hashes.clone().into_iter().map(|h| h.into()).collect();
 
             let col_tree = create_merkle_tree::<C>(
                 &mut col_hashes,

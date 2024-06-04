@@ -1,12 +1,15 @@
-use ark_ff::Field;
-use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
-use ark_std::vec::Vec;
+#[cfg(all(not(feature = "std"), target_arch = "aarch64"))]
+use num_traits::Float;
 
 #[cfg(feature = "parallel")]
 use rayon::{
     iter::{IntoParallelRefIterator, ParallelIterator},
     prelude::IndexedParallelIterator,
 };
+
+use ark_ff::Field;
+use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
+use ark_std::vec::Vec;
 
 /// Takes as input a struct, and converts them to a series of bytes. All traits
 /// that implement `CanonicalSerialize` can be automatically converted to bytes
@@ -18,6 +21,22 @@ macro_rules! to_bytes {
         let mut buf = ark_std::vec![];
         ark_serialize::CanonicalSerialize::serialize_compressed($x, &mut buf).map(|_| buf)
     }};
+}
+
+/// Entropy function
+pub(crate) fn ent(x: f64) -> f64 {
+    assert!(0f64 <= x && x <= 1f64);
+    if x == 0f64 || x == 1f64 {
+        0f64
+    } else {
+        -x * x.log2() - (1.0 - x) * (1.0 - x).log2()
+    }
+}
+
+/// ceil of a * b, where a is integer and b is a rational number
+#[inline]
+pub(crate) fn ceil_mul(a: usize, b: (usize, usize)) -> usize {
+    (a * b.0 + b.1 - 1) / b.1
 }
 
 /// Return ceil(x / y).

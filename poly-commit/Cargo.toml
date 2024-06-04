@@ -33,6 +33,14 @@ harness = false
 [[bench]]
 name = "ligero_ml_times"
 path = "benches/ligero_ml_times.rs"
+
+[[bench]]
+name = "brakedown_times"
+path = "benches/brakedown_ml_times.rs"
+
+[[bench]]
+name = "pcs"
+path = "benches/pcs.rs"
 harness = false
 
 [[bench]]

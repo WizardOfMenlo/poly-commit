@@ -126,9 +126,10 @@ pub use marlin::marlin_pst13_pc;
 /// [bdfg]: https://eprint.iacr.org/2020/081.pdf
 pub mod streaming_kzg;
 
-/// Scheme based on the Ligero construction in [[Ligero]][ligero].
+/// Schemes based on the Ligero construction in [[Ligero]][ligero].
 ///
 /// [ligero]: https://eprint.iacr.org/2022/1608
+/// [brakedown]: https://eprint.iacr.org/2021/1043.pdf
 pub mod linear_codes;
 
 /// `QuerySet` is the set of queries that are to be made to a set of labeled polynomials/equations
