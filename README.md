@@ -186,6 +186,7 @@ Unless you explicitly state otherwise, any contribution that you submit to this 
 [pst]: https://ia.cr/2011/587
 [ligero]: https://ia.cr/2022/1608
 [brakedown]: https://ia.cr/2021/1043
+[hyrax]: https://eprint.iacr.org/2017/1132
 
 ## Reference papers
 
@@ -220,6 +221,10 @@ CCS 2017
 [Brakedown: Linear-time and field-agnostic SNARKs for R1CS][brakedown]    
 Alexander Golovnev, Jonathan Lee, Srinath Setty, Justin Thaler, Riad S. Wahby    
 CRYPTO 2023
+
+[Doubly-efficient zkSNARKs without trusted setup][hyrax]
+Riad S. Wahby, Ioanna Tzialla, abhi shelat, Justin Thaler, Michael Walfish
+2018 IEEE Symposium on Security and Privacy
 
 ## Acknowledgements
 
