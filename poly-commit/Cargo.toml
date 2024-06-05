@@ -37,7 +37,7 @@ harness = false
 
 [[bench]]
 name = "brakedown_times"
-path = "benches/brakedown_ml_times.rs"
+path = "benches/brakedown_times.rs"
 harness = false
 
 [[bench]]
