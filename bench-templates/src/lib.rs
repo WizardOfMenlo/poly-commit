@@ -6,7 +6,10 @@ use ark_crypto_primitives::{
     },
 };
 use ark_ff::PrimeField;
-use ark_poly::Polynomial;
+use ark_poly::{
+    univariate::DensePolynomial as DenseUnivariatePoly, DenseMultilinearExtension,
+    DenseUVPolynomial, MultilinearExtension, Polynomial,
+};
 use ark_serialize::{CanonicalSerialize, Compress};
 use ark_std::test_rng;
 use rand_chacha::{
@@ -28,6 +31,16 @@ pub fn rand_uv_point<F: PrimeField>(_: usize, rng: &mut ChaCha20Rng) -> F {
 
 pub fn rand_ml_point<F: PrimeField>(num_vars: usize, rng: &mut ChaCha20Rng) -> Vec<F> {
     (0..num_vars).map(|_| F::rand(rng)).collect()
+}
+pub fn rand_uv_poly<F: PrimeField>(degree: usize, rng: &mut ChaCha20Rng) -> DenseUnivariatePoly<F> {
+    DenseUnivariatePoly::rand(degree, rng)
+}
+
+pub fn rand_ml_poly<F: PrimeField>(
+    num_vars: usize,
+    rng: &mut ChaCha20Rng,
+) -> DenseMultilinearExtension<F> {
+    DenseMultilinearExtension::rand(num_vars, rng)
 }
 
 /// Measure the time cost of `method` (i.e., commit/open/verify) of a
