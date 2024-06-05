@@ -1,15 +1,17 @@
-use crate::{kzg10, PCCommitterKey, CHALLENGE_SIZE};
-use crate::{BTreeMap, BTreeSet, String, ToString, Vec};
-use crate::{BatchLCProof, DenseUVPolynomial, Error, Evaluations, QuerySet};
-use crate::{LabeledCommitment, LabeledPolynomial, LinearCombination};
-use crate::{PCCommitmentState, PCUniversalParams, PolynomialCommitment};
-use ark_ec::AffineRepr;
-use ark_ec::CurveGroup;
-
-use ark_ec::pairing::Pairing;
+use crate::{
+    kzg10, BTreeMap, BTreeSet, BatchLCProof, DenseUVPolynomial, Error, Evaluations,
+    LabeledCommitment, LabeledPolynomial, LinearCombination, PCCommitmentState, PCCommitterKey,
+    PCUniversalParams, PolynomialCommitment, QuerySet, CHALLENGE_SIZE,
+};
+use ark_crypto_primitives::sponge::CryptographicSponge;
+use ark_ec::{pairing::Pairing, AffineRepr, CurveGroup};
 use ark_ff::{One, UniformRand, Zero};
-use ark_std::rand::RngCore;
-use ark_std::{convert::TryInto, marker::PhantomData, ops::Div, ops::Mul, vec};
+use ark_std::{convert::TryInto, marker::PhantomData, ops::Div, ops::Mul, rand::RngCore};
+#[cfg(not(feature = "std"))]
+use ark_std::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 mod data_structures;
 use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
@@ -25,18 +27,16 @@ pub use data_structures::*;
 /// [sonic]: https://eprint.iacr.org/2019/099
 /// [al]: https://eprint.iacr.org/2019/601
 /// [marlin]: https://eprint.iacr.org/2019/1047
-pub struct SonicKZG10<E: Pairing, P: DenseUVPolynomial<E::ScalarField>, S: CryptographicSponge> {
+pub struct SonicKZG10<E: Pairing, P: DenseUVPolynomial<E::ScalarField>> {
     _engine: PhantomData<E>,
     _poly: PhantomData<P>,
-    _sponge: PhantomData<S>,
 }
 
-impl<E, P, S> SonicKZG10<E, P, S>
+impl<E, P> SonicKZG10<E, P>
 where
     E: Pairing,
     E::G1Affine: Absorb,
     P: DenseUVPolynomial<E::ScalarField>,
-    S: CryptographicSponge,
 {
     fn accumulate_elems<'a>(
         combined_comms: &mut BTreeMap<Option<usize>, E::G1>,
@@ -47,7 +47,7 @@ where
         point: P::Point,
         values: impl IntoIterator<Item = E::ScalarField>,
         proof: &kzg10::Proof<E>,
-        sponge: &mut S,
+        sponge: &mut impl CryptographicSponge,
         randomizer: Option<E::ScalarField>,
     ) {
         let acc_time = start_timer!(|| "Accumulating elements");
@@ -135,12 +135,11 @@ where
     }
 }
 
-impl<E, P, S> PolynomialCommitment<E::ScalarField, P, S> for SonicKZG10<E, P, S>
+impl<E, P> PolynomialCommitment<E::ScalarField, P> for SonicKZG10<E, P>
 where
     E: Pairing,
     E::G1Affine: Absorb,
     P: DenseUVPolynomial<E::ScalarField, Point = E::ScalarField>,
-    S: CryptographicSponge,
     for<'a, 'b> &'a P: Div<&'b P, Output = P>,
 {
     type UniversalParams = UniversalParams<E>;
@@ -346,7 +345,7 @@ where
         labeled_polynomials: impl IntoIterator<Item = &'a LabeledPolynomial<E::ScalarField, P>>,
         _commitments: impl IntoIterator<Item = &'a LabeledCommitment<Self::Commitment>>,
         point: &'a P::Point,
-        sponge: &mut S,
+        sponge: &mut impl CryptographicSponge,
         states: impl IntoIterator<Item = &'a Self::CommitmentState>,
         _rng: Option<&mut dyn RngCore>,
     ) -> Result<Self::Proof, Self::Error>
@@ -391,7 +390,7 @@ where
         point: &'a P::Point,
         values: impl IntoIterator<Item = E::ScalarField>,
         proof: &Self::Proof,
-        sponge: &mut S,
+        sponge: &mut impl CryptographicSponge,
         _rng: Option<&mut dyn RngCore>,
     ) -> Result<bool, Self::Error>
     where
@@ -431,7 +430,7 @@ where
         query_set: &QuerySet<P::Point>,
         values: &Evaluations<E::ScalarField, P::Point>,
         proof: &Self::BatchProof,
-        sponge: &mut S,
+        sponge: &mut impl CryptographicSponge,
         rng: &mut R,
     ) -> Result<bool, Self::Error>
     where
@@ -503,7 +502,7 @@ where
         polynomials: impl IntoIterator<Item = &'a LabeledPolynomial<E::ScalarField, P>>,
         commitments: impl IntoIterator<Item = &'a LabeledCommitment<Self::Commitment>>,
         query_set: &QuerySet<P::Point>,
-        sponge: &mut S,
+        sponge: &mut impl CryptographicSponge,
         states: impl IntoIterator<Item = &'a Self::CommitmentState>,
         rng: Option<&mut dyn RngCore>,
     ) -> Result<BatchLCProof<E::ScalarField, Self::BatchProof>, Self::Error>
@@ -598,7 +597,7 @@ where
         eqn_query_set: &QuerySet<P::Point>,
         eqn_evaluations: &Evaluations<P::Point, E::ScalarField>,
         proof: &BatchLCProof<E::ScalarField, Self::BatchProof>,
-        sponge: &mut S,
+        sponge: &mut impl CryptographicSponge,
         rng: &mut R,
     ) -> Result<bool, Self::Error>
     where
@@ -679,7 +678,6 @@ mod tests {
     use super::SonicKZG10;
     use ark_bls12_377::Bls12_377;
     use ark_bls12_381::Bls12_381;
-    use ark_crypto_primitives::sponge::poseidon::PoseidonSponge;
     use ark_ec::pairing::Pairing;
     use ark_ff::UniformRand;
     use ark_poly::{univariate::DensePolynomial as DensePoly, DenseUVPolynomial};
@@ -688,11 +686,9 @@ mod tests {
     type UniPoly_381 = DensePoly<<Bls12_381 as Pairing>::ScalarField>;
     type UniPoly_377 = DensePoly<<Bls12_377 as Pairing>::ScalarField>;
 
-    type PC<E, P, S> = SonicKZG10<E, P, S>;
-    type Sponge_Bls12_377 = PoseidonSponge<<Bls12_377 as Pairing>::ScalarField>;
-    type Sponge_Bls12_381 = PoseidonSponge<<Bls12_381 as Pairing>::ScalarField>;
-    type PC_Bls12_377 = PC<Bls12_377, UniPoly_377, Sponge_Bls12_377>;
-    type PC_Bls12_381 = PC<Bls12_381, UniPoly_381, Sponge_Bls12_381>;
+    type PC<E, P> = SonicKZG10<E, P>;
+    type PC_Bls12_377 = PC<Bls12_377, UniPoly_377>;
+    type PC_Bls12_381 = PC<Bls12_381, UniPoly_381>;
 
     fn rand_poly<E: Pairing>(
         degree: usize,
@@ -713,14 +709,14 @@ mod tests {
             None,
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         single_poly_test::<_, _, PC_Bls12_381, _>(
             None,
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
     }
@@ -731,13 +727,13 @@ mod tests {
         quadratic_poly_degree_bound_multiple_queries_test::<_, _, PC_Bls12_377, _>(
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         quadratic_poly_degree_bound_multiple_queries_test::<_, _, PC_Bls12_381, _>(
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
     }
@@ -748,13 +744,13 @@ mod tests {
         linear_poly_degree_bound_test::<_, _, PC_Bls12_377, _>(
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         linear_poly_degree_bound_test::<_, _, PC_Bls12_381, _>(
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
     }
@@ -765,13 +761,13 @@ mod tests {
         single_poly_degree_bound_test::<_, _, PC_Bls12_377, _>(
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         single_poly_degree_bound_test::<_, _, PC_Bls12_381, _>(
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
     }
@@ -782,13 +778,13 @@ mod tests {
         single_poly_degree_bound_multiple_queries_test::<_, _, PC_Bls12_377, _>(
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         single_poly_degree_bound_multiple_queries_test::<_, _, PC_Bls12_381, _>(
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
     }
@@ -799,13 +795,13 @@ mod tests {
         two_polys_degree_bound_single_query_test::<_, _, PC_Bls12_377, _>(
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         two_polys_degree_bound_single_query_test::<_, _, PC_Bls12_381, _>(
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
     }
@@ -817,7 +813,7 @@ mod tests {
             None,
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         println!("Finished bls12-377");
@@ -825,7 +821,7 @@ mod tests {
             None,
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
         println!("Finished bls12-381");
@@ -838,7 +834,7 @@ mod tests {
             None,
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         println!("Finished bls12-377");
@@ -846,7 +842,7 @@ mod tests {
             None,
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
         println!("Finished bls12-381");
@@ -859,7 +855,7 @@ mod tests {
             None,
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         println!("Finished bls12-377");
@@ -867,7 +863,7 @@ mod tests {
             None,
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
         println!("Finished bls12-381");
@@ -879,14 +875,14 @@ mod tests {
         two_equation_degree_bound_test::<_, _, PC_Bls12_377, _>(
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         println!("Finished bls12-377");
         two_equation_degree_bound_test::<_, _, PC_Bls12_381, _>(
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
         println!("Finished bls12-381");
@@ -899,7 +895,7 @@ mod tests {
             None,
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         println!("Finished bls12-377");
@@ -907,7 +903,7 @@ mod tests {
             None,
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
         println!("Finished bls12-381");
@@ -920,14 +916,14 @@ mod tests {
         bad_degree_bound_test::<_, _, PC_Bls12_377, _>(
             rand_poly::<Bls12_377>,
             rand_point::<Bls12_377>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_377 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-377");
         println!("Finished bls12-377");
         bad_degree_bound_test::<_, _, PC_Bls12_381, _>(
             rand_poly::<Bls12_381>,
             rand_point::<Bls12_381>,
-            poseidon_sponge_for_test,
+            poseidon_sponge_for_test::<<Bls12_381 as Pairing>::ScalarField>,
         )
         .expect("test failed for bls12-381");
         println!("Finished bls12-381");
