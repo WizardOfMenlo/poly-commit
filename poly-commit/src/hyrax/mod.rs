@@ -98,7 +98,7 @@ where
 
 impl<G, P, S> PolynomialCommitment<G::ScalarField, P, S> for HyraxPC<G, P, S>
 where
-    G: AffineRepr,
+    G: AffineRepr + Absorb,
     G::ScalarField: Absorb,
     P: MultilinearExtension<G::ScalarField>,
     S: CryptographicSponge,

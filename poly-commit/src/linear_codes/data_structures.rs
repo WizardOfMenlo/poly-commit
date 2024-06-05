@@ -3,6 +3,7 @@ use crate::{utils::Matrix, PCCommitment, PCCommitmentState};
 use ark_crypto_primitives::{
     crh::CRHScheme,
     merkle_tree::{Config, LeafParam, Path, TwoToOneParam},
+    sponge::Absorb,
 };
 use ark_ff::PrimeField;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
@@ -83,7 +84,7 @@ pub struct BrakedownPCParams<F: PrimeField, C: Config, H: CRHScheme> {
     pub(crate) col_hash_params: H::Parameters,
 }
 
-#[derive(Derivative, CanonicalSerialize, CanonicalDeserialize)]
+#[derive(Derivative, CanonicalSerialize, CanonicalDeserialize, Absorb)]
 #[derivative(Default(bound = ""), Clone(bound = ""), Debug(bound = ""))]
 pub(crate) struct Metadata {
     pub(crate) n_rows: usize,
@@ -93,7 +94,7 @@ pub(crate) struct Metadata {
 
 /// The commitment to a polynomial is a root of the merkle tree,
 /// where each node is a hash of the column of the encoded coefficient matrix U.
-#[derive(Derivative, CanonicalSerialize, CanonicalDeserialize)]
+#[derive(Derivative, CanonicalSerialize, CanonicalDeserialize, Absorb)]
 #[derivative(Default(bound = ""), Clone(bound = ""), Debug(bound = ""))]
 pub struct LinCodePCCommitment<C: Config> {
     // number of rows resp. columns of the square matrix containing the coefficients of the polynomial

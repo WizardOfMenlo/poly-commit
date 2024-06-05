@@ -1,3 +1,4 @@
+use ark_crypto_primitives::sponge::Absorb;
 use ark_ec::AffineRepr;
 use ark_ff::PrimeField;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
@@ -55,15 +56,15 @@ impl<G: AffineRepr> PCVerifierKey for HyraxVerifierKey<G> {
 
 /// Hyrax commitment to a polynomial consisting of one multi-commit per row of
 /// the coefficient matrix
-#[derive(Derivative, CanonicalSerialize, CanonicalDeserialize)]
+#[derive(Derivative, CanonicalSerialize, CanonicalDeserialize, Absorb)]
 #[derivative(Default(bound = ""), Clone(bound = ""), Debug(bound = ""))]
-pub struct HyraxCommitment<G: AffineRepr> {
+pub struct HyraxCommitment<G: AffineRepr + Absorb> {
     /// A list of multi-commits to each row of the matrix representing the
     /// polynomial.
     pub row_coms: Vec<G>,
 }
 
-impl<G: AffineRepr> PCCommitment for HyraxCommitment<G> {
+impl<G: AffineRepr + Absorb> PCCommitment for HyraxCommitment<G> {
     #[inline]
     fn empty() -> Self {
         HyraxCommitment {
