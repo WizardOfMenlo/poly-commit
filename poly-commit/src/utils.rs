@@ -3,7 +3,7 @@ use num_traits::Float;
 
 #[cfg(feature = "parallel")]
 use rayon::{
-    iter::{IntoParallelRefIterator, ParallelIterator},
+    iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator},
     prelude::IndexedParallelIterator,
 };
 
@@ -43,6 +43,19 @@ pub(crate) fn ceil_mul(a: usize, b: (usize, usize)) -> usize {
 pub(crate) fn ceil_div(x: usize, y: usize) -> usize {
     // XXX. warning: this expression can overflow.
     (x + y - 1) / y
+}
+
+#[inline]
+pub(crate) fn scalar_by_vector<F: Field>(s: F, v: &[F]) -> Vec<F> {
+    ark_std::cfg_iter!(v).map(|x| *x * s).collect()
+}
+
+#[inline]
+pub(crate) fn vector_sum<F: Field>(v1: &[F], v2: &[F]) -> Vec<F> {
+    ark_std::cfg_iter!(v1)
+        .zip(v2)
+        .map(|(li, ri)| *li + ri)
+        .collect()
 }
 
 #[derive(Derivative, CanonicalSerialize, CanonicalDeserialize)]
@@ -134,11 +147,11 @@ impl<F: Field> Matrix<F> {
             self.n
         );
 
-        (0..self.m)
+        cfg_into_iter!(0..self.m)
             .map(|col| {
                 inner_product(
                     v,
-                    &(0..self.n)
+                    &cfg_into_iter!(0..self.n)
                         .map(|row| self.entries[row][col])
                         .collect::<Vec<F>>(),
                 )

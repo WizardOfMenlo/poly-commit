@@ -1,13 +1,13 @@
 use super::utils::reed_solomon;
 use super::{LigeroPCParams, LinearEncode};
 
+use crate::Error;
 use ark_crypto_primitives::crh::{CRHScheme, TwoToOneCRHScheme};
 use ark_crypto_primitives::{merkle_tree::Config, sponge::CryptographicSponge};
 use ark_ff::PrimeField;
 use ark_poly::DenseUVPolynomial;
 use ark_std::marker::PhantomData;
 use ark_std::vec::Vec;
-use crate::Error;
 
 mod tests;
 
