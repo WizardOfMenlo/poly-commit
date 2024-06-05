@@ -7,7 +7,6 @@ use crate::Error;
 use ark_crypto_primitives::{
     crh::{CRHScheme, TwoToOneCRHScheme},
     merkle_tree::Config,
-    sponge::CryptographicSponge,
 };
 use ark_ff::{FftField, PrimeField};
 use ark_poly::{MultilinearExtension, Polynomial};
@@ -23,21 +22,14 @@ mod tests;
 /// Note: The scheme currently does not support hiding.
 ///
 /// [ligero]: https://eprint.iacr.org/2022/1608.pdf
-pub struct MultilinearLigero<
-    F: PrimeField,
-    C: Config,
-    S: CryptographicSponge,
-    P: MultilinearExtension<F>,
-    H: CRHScheme,
-> {
-    _phantom: PhantomData<(F, C, S, P, H)>,
+pub struct MultilinearLigero<F: PrimeField, C: Config, P: MultilinearExtension<F>, H: CRHScheme> {
+    _phantom: PhantomData<(F, C, P, H)>,
 }
 
-impl<F, C, S, P, H> LinearEncode<F, C, P, H> for MultilinearLigero<F, C, S, P, H>
+impl<F, C, P, H> LinearEncode<F, C, P, H> for MultilinearLigero<F, C, P, H>
 where
     F: PrimeField + FftField,
     C: Config,
-    S: CryptographicSponge,
     P: MultilinearExtension<F>,
     <P as Polynomial<F>>::Point: Into<Vec<F>>,
     H: CRHScheme,

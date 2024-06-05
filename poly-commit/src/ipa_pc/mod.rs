@@ -3,7 +3,7 @@ use crate::{
     LabeledPolynomial, LinearCombination, PCCommitmentState, PCCommitterKey, PCUniversalParams,
     PolynomialCommitment, QuerySet, CHALLENGE_SIZE,
 };
-use ark_crypto_primitives::sponge::CryptographicSponge;
+use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
 use ark_ec::{AffineRepr, CurveGroup, VariableBaseMSM};
 use ark_ff::{Field, One, PrimeField, UniformRand, Zero};
 use ark_serialize::CanonicalSerialize;
@@ -19,9 +19,6 @@ use rayon::prelude::*;
 
 mod data_structures;
 pub use data_structures::*;
-
-use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
-use digest::Digest;
 
 /// A polynomial commitment scheme based on the hardness of the
 /// discrete logarithm problem in prime-order groups.

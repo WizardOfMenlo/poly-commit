@@ -4,9 +4,8 @@
 //! at a chosen point `x`. Our construction follows the template of the construction
 //! proposed by Kate, Zaverucha, and Goldberg ([KZG10](http://cacr.uwaterloo.ca/techreports/2010/cacr2010-10.pdf)).
 //! This construction achieves extractability in the algebraic group model (AGM).
-
-use crate::{BTreeMap, Error, LabeledPolynomial, PCCommitmentState};
-use crate::{BTreeMap, Error, LabeledPolynomial, PCCommitmentState, ToString, Vec};
+//!
+use crate::{data_structures::PCCommitmentState, BTreeMap, Error, LabeledPolynomial};
 use ark_crypto_primitives::sponge::Absorb;
 use ark_ec::{pairing::Pairing, scalar_mul::ScalarMul, AffineRepr, CurveGroup, VariableBaseMSM};
 use ark_ff::{One, PrimeField, UniformRand, Zero};

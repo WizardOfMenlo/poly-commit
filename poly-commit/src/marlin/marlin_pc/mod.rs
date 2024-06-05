@@ -3,7 +3,6 @@ use crate::{
     LabeledPolynomial, LinearCombination, PCCommitmentState, PCCommitterKey, PCUniversalParams,
     PolynomialCommitment, QuerySet, CHALLENGE_SIZE,
 };
-use ark_crypto_primitives::sponge::CryptographicSponge;
 use ark_ec::{pairing::Pairing, AffineRepr, CurveGroup};
 use ark_ff::Zero;
 use ark_poly::DenseUVPolynomial;

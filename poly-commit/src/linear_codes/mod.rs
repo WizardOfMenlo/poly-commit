@@ -150,24 +150,22 @@ where
 }
 
 /// Any linear-code-based commitment scheme.
-pub struct LinearCodePCS<L, F, P, S, C, H>
+pub struct LinearCodePCS<L, F, P, C, H>
 where
     F: PrimeField,
     C: Config,
-    S: CryptographicSponge,
     P: Polynomial<F>,
     H: CRHScheme,
     L: LinearEncode<F, C, P, H>,
 {
-    _phantom: PhantomData<(L, F, P, S, C, H)>,
+    _phantom: PhantomData<(L, F, P, C, H)>,
 }
 
-impl<L, F, P, S, C, H> PolynomialCommitment<F, P, S> for LinearCodePCS<L, F, P, S, C, H>
+impl<L, F, P, C, H> PolynomialCommitment<F, P> for LinearCodePCS<L, F, P, C, H>
 where
     L: LinearEncode<F, C, P, H>,
     F: PrimeField + Absorb,
     P: Polynomial<F>,
-    S: CryptographicSponge,
     C: Config + 'static,
     Vec<F>: Borrow<<H as CRHScheme>::Input>,
     H::Output: Into<C::Leaf> + Send,
@@ -307,7 +305,7 @@ where
         _labeled_polynomials: impl IntoIterator<Item = &'a LabeledPolynomial<F, P>>,
         commitments: impl IntoIterator<Item = &'a LabeledCommitment<Self::Commitment>>,
         point: &'a P::Point,
-        sponge: &mut S,
+        sponge: &mut impl CryptographicSponge,
         states: impl IntoIterator<Item = &'a Self::CommitmentState>,
         _rng: Option<&mut dyn RngCore>,
     ) -> Result<Self::Proof, Self::Error>
@@ -383,7 +381,7 @@ where
         point: &'a P::Point,
         values: impl IntoIterator<Item = F>,
         proof_array: &Self::Proof,
-        sponge: &mut S,
+        sponge: &mut impl CryptographicSponge,
         _rng: Option<&mut dyn RngCore>,
     ) -> Result<bool, Self::Error>
     where
@@ -513,19 +511,18 @@ where
         .map_err(|_| Error::HashingError)
 }
 
-fn generate_proof<F, C, S>(
+fn generate_proof<F, C>(
     sec_param: usize,
     distance: (usize, usize),
     b: &[F],
     mat: &Matrix<F>,
     ext_mat: &Matrix<F>,
     col_tree: &MerkleTree<C>,
-    sponge: &mut S,
+    sponge: &mut impl CryptographicSponge,
 ) -> Result<LinCodePCProofSingle<F, C>, Error>
 where
     F: PrimeField + Absorb,
     C: Config,
-    S: CryptographicSponge,
 {
     let t = calculate_t::<F>(sec_param, distance, ext_mat.m)?;
 

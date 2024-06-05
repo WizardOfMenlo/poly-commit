@@ -1,5 +1,5 @@
 use crate::*;
-use crate::{PCCommitterKey, PCVerifierKey, Vec};
+use crate::{PCCommitterKey, PCVerifierKey};
 use ark_crypto_primitives::sponge::Absorb;
 use ark_ec::AffineRepr;
 use ark_ff::{UniformRand, Zero};

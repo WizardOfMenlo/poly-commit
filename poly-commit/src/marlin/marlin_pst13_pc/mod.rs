@@ -4,7 +4,6 @@ use crate::{
     BatchLCProof, Error, Evaluations, LabeledCommitment, LabeledPolynomial, LinearCombination,
     PCCommitmentState, PCUniversalParams, PolynomialCommitment, QuerySet, CHALLENGE_SIZE,
 };
-use ark_crypto_primitives::sponge::CryptographicSponge;
 use ark_crypto_primitives::sponge::{Absorb, CryptographicSponge};
 use ark_ec::{
     pairing::Pairing,

@@ -1,8 +1,9 @@
 //! Space-efficient implementation of the polynomial commitment of Kate et al.
 use crate::streaming_kzg::{
-    ceil_div, time::CommitterKey, vanishing_polynomial, Commitment, EvaluationProof,
-    FoldedPolynomialTree, VerifierKey,
+    time::CommitterKey, vanishing_polynomial, Commitment, EvaluationProof, FoldedPolynomialTree,
+    VerifierKey,
 };
+use crate::utils::ceil_div;
 use ark_ec::{
     pairing::Pairing,
     scalar_mul::variable_base::{ChunkedPippenger, HashMapPippenger, VariableBaseMSM},

@@ -20,25 +20,25 @@ fn rand_poly_ipa_pc<F: PrimeField>(degree: usize, rng: &mut ChaCha20Rng) -> Dens
     DenseUnivariatePoly::rand(degree, rng)
 }
 
-const MIN_NUM_VARS: usize = 10;
-const MAX_NUM_VARS: usize = 20;
+const MIN_DEGREE: usize = 10;
+const MAX_DEGREE: usize = 20;
 
 fn main() {
     println!("\nIPA on JubJub: Commitment size");
-    for num_vars in (MIN_NUM_VARS..MAX_NUM_VARS).step_by(2) {
+    for degree in (MIN_DEGREE..MAX_DEGREE).step_by(2) {
         println!(
-            "\tnum_vars: {}, size: {} B",
-            num_vars,
-            commitment_size::<_, _, IPA_JubJub>(num_vars, rand_poly_ipa_pc)
+            "\tdegree: {}, size: {} B",
+            degree,
+            commitment_size::<_, _, IPA_JubJub>(degree, rand_poly_ipa_pc)
         );
     }
 
     println!("\nIPA on JubJub: Proof size");
-    for num_vars in (MIN_NUM_VARS..MAX_NUM_VARS).step_by(2) {
+    for degree in (MIN_DEGREE..MAX_DEGREE).step_by(2) {
         println!(
-            "\tnum_vars: {}, size: {} B",
-            num_vars,
-            proof_size::<_, _, IPA_JubJub>(num_vars, rand_poly_ipa_pc)
+            "\tdegree: {}, size: {} B",
+            degree,
+            proof_size::<_, _, IPA_JubJub>(degree, rand_poly_ipa_pc, rand_uv_point)
         );
     }
 }

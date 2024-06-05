@@ -8,7 +8,7 @@ use ark_crypto_primitives::{
 use ark_ff::PrimeField;
 use ark_poly::Polynomial;
 use ark_serialize::{CanonicalSerialize, Compress};
-use ark_std::{test_rng, UniformRand};
+use ark_std::test_rng;
 use rand_chacha::{
     rand_core::{RngCore, SeedableRng},
     ChaCha20Rng,
@@ -21,6 +21,14 @@ use ark_poly_commit::{to_bytes, LabeledPolynomial, PolynomialCommitment};
 
 pub use criterion::*;
 pub use paste::paste;
+
+pub fn rand_uv_point<F: PrimeField>(_: usize, rng: &mut ChaCha20Rng) -> F {
+    F::rand(rng)
+}
+
+pub fn rand_ml_point<F: PrimeField>(num_vars: usize, rng: &mut ChaCha20Rng) -> Vec<F> {
+    (0..num_vars).map(|_| F::rand(rng)).collect()
+}
 
 /// Measure the time cost of `method` (i.e., commit/open/verify) of a
 /// multilinear PCS for all `num_vars` specified in `nv_list`. `rand_poly` is a
@@ -114,7 +122,6 @@ where
     F: PrimeField,
     P: Polynomial<F>,
     PCS: PolynomialCommitment<F, P>,
-    P::Point: UniformRand,
 {
     let rng = &mut ChaCha20Rng::from_rng(test_rng()).unwrap();
 
@@ -139,13 +146,15 @@ where
 }
 
 /// Report the size of a proof
-pub fn proof_size<F, P, PCS>(num_vars: usize, rand_poly: fn(usize, &mut ChaCha20Rng) -> P) -> usize
+pub fn proof_size<F, P, PCS>(
+    num_vars: usize,
+    rand_poly: fn(usize, &mut ChaCha20Rng) -> P,
+    rand_point: fn(usize, &mut ChaCha20Rng) -> P::Point,
+) -> usize
 where
     F: PrimeField,
     P: Polynomial<F>,
     PCS: PolynomialCommitment<F, P>,
-
-    P::Point: UniformRand,
 {
     let rng = &mut ChaCha20Rng::from_rng(test_rng()).unwrap();
 
@@ -156,7 +165,7 @@ where
         LabeledPolynomial::new("test".to_string(), rand_poly(num_vars, rng), None, None);
 
     let (coms, states) = PCS::commit(&ck, [&labeled_poly], Some(rng)).unwrap();
-    let point = P::Point::rand(rng);
+    let point = rand_point(num_vars, rng);
 
     let proofs = PCS::open(
         &ck,
@@ -186,7 +195,6 @@ where
     F: PrimeField,
     P: Polynomial<F>,
     PCS: PolynomialCommitment<F, P>,
-    P::Point: UniformRand,
 {
     let rng = &mut ChaCha20Rng::from_rng(test_rng()).unwrap();
 

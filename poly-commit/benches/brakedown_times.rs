@@ -1,7 +1,6 @@
 use ark_crypto_primitives::{
     crh::{sha256::Sha256, CRHScheme, TwoToOneCRHScheme},
     merkle_tree::{ByteDigestConverter, Config},
-    sponge::poseidon::PoseidonSponge,
 };
 use ark_pcs_bench_templates::*;
 use ark_poly::{DenseMultilinearExtension, MultilinearExtension};
@@ -30,13 +29,11 @@ impl Config for MerkleTreeParams {
 
 pub type MLE<F> = DenseMultilinearExtension<F>;
 type MTConfig = MerkleTreeParams;
-type Sponge<F> = PoseidonSponge<F>;
 type ColHasher<F> = FieldToBytesColHasher<F, Blake2s256>;
 type Brakedown<F> = LinearCodePCS<
-    MultilinearBrakedown<F, MTConfig, Sponge<F>, MLE<F>, ColHasher<F>>,
+    MultilinearBrakedown<F, MTConfig, MLE<F>, ColHasher<F>>,
     F,
     MLE<F>,
-    Sponge<F>,
     MTConfig,
     ColHasher<F>,
 >;
@@ -47,16 +44,7 @@ fn rand_poly_brakedown_ml<F: PrimeField>(
 ) -> DenseMultilinearExtension<F> {
     DenseMultilinearExtension::rand(num_vars, rng)
 }
-
-fn rand_point_brakedown_ml<F: PrimeField>(num_vars: usize, rng: &mut ChaCha20Rng) -> Vec<F> {
-    (0..num_vars).map(|_| F::rand(rng)).collect()
-}
-
 const MIN_NUM_VARS: usize = 12;
 const MAX_NUM_VARS: usize = 22;
 
-bench!(
-    Brakedown<Fr>,
-    rand_poly_brakedown_ml,
-    rand_point_brakedown_ml
-);
+bench!(Brakedown<Fr>, rand_poly_brakedown_ml, rand_ml_point);
