@@ -8,6 +8,6 @@ use ark_poly_commit::marlin_pst13_pc::MarlinPST13;
 type PST13Bn254 = MarlinPST13<Bn254, SparsePolynomial<Fr, SparseTerm>>;
 
 const MIN_NUM_VARS: usize = 24;
-const MAX_NUM_VARS: usize = 24;
+const MAX_NUM_VARS: usize = 25;
 
 bench!(PST13Bn254, rand_sparse_ml_poly, rand_ml_point);

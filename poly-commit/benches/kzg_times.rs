@@ -12,6 +12,6 @@ type UniPoly = DenseUnivariatePoly<<Bn254 as Pairing>::ScalarField>;
 type KZG_BN254 = MarlinKZG10<Bn254, UniPoly>;
 
 const MIN_NUM_VARS: usize = 24;
-const MAX_NUM_VARS: usize = 24;
+const MAX_NUM_VARS: usize = 25;
 
 bench!(KZG_BN254, rand_uv_poly, rand_uv_point);

@@ -37,6 +37,6 @@ type Brakedown<F> = LinearCodePCS<
 >;
 
 const MIN_NUM_VARS: usize = 24;
-const MAX_NUM_VARS: usize = 24;
+const MAX_NUM_VARS: usize = 25;
 
 bench!(Brakedown<Fr>, rand_ml_poly, rand_ml_point);
