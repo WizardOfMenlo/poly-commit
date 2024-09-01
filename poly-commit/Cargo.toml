@@ -26,11 +26,6 @@ derivative = { version = "2", features = [ "use_core" ] }
 rayon = { version = "1", optional = true }
 
 [[bench]]
-name = "ipa_times"
-path = "benches/ipa_times.rs"
-harness = false
-
-[[bench]]
 name = "ligero_ml_times"
 path = "benches/ligero_ml_times.rs"
 harness = false
@@ -43,6 +38,16 @@ harness = false
 [[bench]]
 name = "hyrax_times"
 path = "benches/hyrax_times.rs"
+harness = false
+
+[[bench]]
+name = "pst_times"
+path = "benches/pst_times.rs"
+harness = false
+
+[[bench]]
+name = "kzg_times"
+path = "benches/kzg_times.rs"
 harness = false
 
 [[bench]]

@@ -7,8 +7,10 @@ use ark_crypto_primitives::{
 };
 use ark_ff::PrimeField;
 use ark_poly::{
-    univariate::DensePolynomial as DenseUnivariatePoly, DenseMultilinearExtension,
-    DenseUVPolynomial, MultilinearExtension, Polynomial,
+    multivariate::{SparsePolynomial, SparseTerm},
+    univariate::DensePolynomial as DenseUnivariatePoly,
+    DenseMVPolynomial, DenseMultilinearExtension, DenseUVPolynomial, MultilinearExtension,
+    Polynomial,
 };
 use ark_serialize::{CanonicalSerialize, Compress};
 use ark_std::test_rng;
@@ -41,6 +43,13 @@ pub fn rand_ml_poly<F: PrimeField>(
     rng: &mut ChaCha20Rng,
 ) -> DenseMultilinearExtension<F> {
     DenseMultilinearExtension::rand(num_vars, rng)
+}
+
+pub fn rand_sparse_ml_poly<F: PrimeField>(
+    num_vars: usize,
+    rng: &mut ChaCha20Rng,
+) -> SparsePolynomial<F, SparseTerm> {
+    SparsePolynomial::rand(num_vars, num_vars, rng)
 }
 
 /// Measure the time cost of `method` (i.e., commit/open/verify) of a
