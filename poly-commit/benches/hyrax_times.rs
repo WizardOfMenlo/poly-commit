@@ -7,7 +7,7 @@ use ark_poly_commit::hyrax::HyraxPC;
 // Hyrax PCS over BN254
 type Hyrax254 = HyraxPC<G1Affine, DenseMultilinearExtension<Fr>>;
 
-const MIN_NUM_VARS: usize = 12;
-const MAX_NUM_VARS: usize = 22;
+const MIN_NUM_VARS: usize = 24;
+const MAX_NUM_VARS: usize = 24;
 
 bench!(Hyrax254, rand_ml_poly, rand_ml_point);

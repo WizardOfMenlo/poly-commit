@@ -36,7 +36,7 @@ type Ligero<F> = LinearCodePCS<
     ColHasher<F>,
 >;
 
-const MIN_NUM_VARS: usize = 12;
-const MAX_NUM_VARS: usize = 22;
+const MIN_NUM_VARS: usize = 24;
+const MAX_NUM_VARS: usize = 24;
 
 bench!(Ligero<Fr>, rand_ml_poly, rand_ml_point);
