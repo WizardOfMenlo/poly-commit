@@ -41,11 +41,6 @@ path = "benches/hyrax_times.rs"
 harness = false
 
 [[bench]]
-name = "pst_times"
-path = "benches/pst_times.rs"
-harness = false
-
-[[bench]]
 name = "kzg_times"
 path = "benches/kzg_times.rs"
 harness = false
